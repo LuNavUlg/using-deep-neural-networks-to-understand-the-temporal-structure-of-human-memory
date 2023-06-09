@@ -1,0 +1,7 @@
+environment: line 5: __conda_exe: command not found
+/var/spool/slurm/slurmd/job2611112/slurm_script: line 46: [: =: unary operator expected
+Using device: cuda
+Traceback (most recent call last):
+  File "/home/lnavez/atfe/script.py", line 72, in <module>
+    nb_videos = int(args.videos)
+ValueError: invalid literal for int() with base 10: 'false'

@@ -1,0 +1,65 @@
+environment: line 5: __conda_exe: command not found
+/var/spool/slurm/slurmd/job2610759/slurm_script: line 22: cd: atfe: No such file or directory
+Submitted batch job 2610760
+Submitted batch job 2610761
+Number of videos: 64
+Number of videos in the directory : 65
+Number of videos in the dataframe : 64
+Generating the training set for videos : 
+TRAINING SET : contains 962 samples, 37 patients based on 56 videos
+TEST SET : contains 127 samples, 37 patients based on 8 videos
+Dataset constituted.
+--------------------BASELINE : DUMMY-------------------
+                                             accs  y_pred (s)  y_true (s)
+54              [2, 1, 1, 2, 3, 3, 6, 5, 3, 3, 1]   21.118309      19.499
+4    [27, 22, 29, 28, 25, 32, 34, 33, 31, 26, 26]   21.118309      26.335
+3    [27, 22, 29, 28, 25, 32, 34, 33, 31, 26, 26]   21.118309      27.642
+11   [27, 22, 29, 28, 25, 32, 34, 33, 31, 26, 26]   21.118309      18.893
+27   [26, 27, 26, 25, 27, 27, 29, 27, 27, 20, 22]   21.118309      65.978
+29   [26, 27, 26, 25, 27, 27, 29, 27, 27, 20, 22]   21.118309      45.143
+64              [2, 1, 1, 2, 3, 3, 6, 5, 3, 3, 1]   21.118309      30.560
+77    [14, 14, 14, 14, 14, 14, 14, 14, 15, 14, 8]   21.118309      12.834
+124  [22, 21, 21, 20, 22, 22, 24, 22, 22, 21, 20]   21.118309      45.263
+71              [2, 1, 1, 2, 3, 3, 6, 5, 3, 3, 1]   21.118309       9.629
+25   [26, 27, 26, 25, 27, 27, 29, 27, 27, 20, 22]   21.118309      19.467
+91              [8, 3, 4, 5, 6, 3, 3, 5, 5, 3, 3]   21.118309      14.879
+83    [14, 14, 14, 14, 14, 14, 14, 14, 15, 14, 8]   21.118309      24.338
+89    [14, 14, 14, 14, 14, 14, 14, 14, 15, 14, 8]   21.118309      11.455
+69              [2, 1, 1, 2, 3, 3, 6, 5, 3, 3, 1]   21.118309       9.069
+{'mse': 262.9350363083885, 'mae': 11.690731702326193, 'r2-score': -0.07543909710708063, 'max-error': 59.78569126819126, 'explained variance score': 0.0, 'layers': []}
+Number of videos: 64
+Number of videos in the directory : 65
+Number of videos in the dataframe : 64
+Generating the training set for videos : 
+TRAINING SET : contains 962 samples, 37 patients based on 56 videos
+TEST SET : contains 127 samples, 37 patients based on 8 videos
+Dataset constituted.
+----------------BASELINE : REAL DURATIONS---------------
+     accs  y_pred (s)  y_true (s)
+54   [60]      22.507      19.499
+4    [60]      22.507      26.335
+3    [60]      22.507      27.642
+11   [60]      22.507      18.893
+27   [60]      22.507      65.978
+29   [60]      22.507      45.143
+64   [60]      22.507      30.560
+77   [30]      14.083      12.834
+124  [60]      22.507      45.263
+71   [60]      22.507       9.629
+25   [60]      22.507      19.467
+91   [60]      22.507      14.879
+83   [30]      14.083      24.338
+89   [30]      14.083      11.455
+69   [60]      22.507       9.069
+{'mse': 251.23630299958197, 'mae': 11.399881887568704, 'r2-score': -0.02758972958436212, 'max-error': 58.396999721223764, 'explained variance score': 0.0434056401943268, 'layers': []}
+Submitted batch job 2610762
+Submitted batch job 2610763
+Submitted batch job 2610764
+Submitted batch job 2610765
+Submitted batch job 2610767
+Submitted batch job 2610768
+Submitted batch job 2610769
+Submitted batch job 2610770
+Submitted batch job 2610771
+Submitted batch job 2610772
+Submitted batch job 2610773
