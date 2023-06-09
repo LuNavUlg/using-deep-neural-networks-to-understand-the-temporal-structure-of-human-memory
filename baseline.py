@@ -7,7 +7,13 @@ import pandas as pd
 
 from sklearn.svm import SVR
 from sklearn.dummy import DummyRegressor
-from sklearn.metrics import mean_squared_error, mean_absolute_error, r2_score, max_error, explained_variance_score
+from sklearn.metrics import (
+    mean_squared_error,
+    mean_absolute_error,
+    r2_score,
+    max_error,
+    explained_variance_score,
+)
 import utils
 
 #################################
@@ -33,15 +39,19 @@ df = utils.read_excel(root_dir, videos_dir)
 # Load dataset
 #################################
 # Load the accumulators (if already computed) (pickles)
-NETWORK = "alexnet" # not important, preds are not based on network
+NETWORK = "alexnet"  # not important, preds are not based on network here
 if (
     os.path.exists("videos_accs_" + str(NB_VIDEOS) + "_" + str(NETWORK) + ".p")
-    and os.path.exists("videos_thresholds_" + str(NB_VIDEOS) + "_" + str(NETWORK) + ".p")
+    and os.path.exists(
+        "videos_thresholds_" + str(NB_VIDEOS) + "_" + str(NETWORK) + ".p"
+    )
     and os.path.exists("videos_l2_" + str(NB_VIDEOS) + "_" + str(NETWORK) + ".p")
 ):
     with open("videos_accs_" + str(NB_VIDEOS) + "_" + str(NETWORK) + ".p", "rb") as f:
         videos_accs = pickle.load(f)
-    with open("videos_thresholds_" + str(NB_VIDEOS) + "_" + str(NETWORK) + ".p", "rb") as f:
+    with open(
+        "videos_thresholds_" + str(NB_VIDEOS) + "_" + str(NETWORK) + ".p", "rb"
+    ) as f:
         videos_thresholds = pickle.load(f)
     with open("videos_l2_" + str(NB_VIDEOS) + "_" + str(NETWORK) + ".p", "rb") as f:
         videos_l2 = pickle.load(f)
@@ -63,7 +73,7 @@ print("Dataset constituted.")
 #################################
 if TYPE == "dummy":
     print("--------------------BASELINE : DUMMY-------------------")
-    model = DummyRegressor(strategy='mean')
+    model = DummyRegressor(strategy="mean")
 elif TYPE == "real_duration":
     print("----------------BASELINE : REAL DURATIONS---------------")
     model = SVR(kernel="rbf", C=1e3, gamma=0.0001, epsilon=0.1)
@@ -73,7 +83,6 @@ model.fit(X, y)
 # Test
 #################################
 y_pred = model.predict(X_val)
-# Display results in dataframe
 results = pd.DataFrame(
     {
         "accs": X_val,
@@ -85,13 +94,20 @@ results = pd.DataFrame(
 results = results.iloc[random.sample(range(len(results)), len(results))]
 print(results.head(15))
 
-mse = mean_squared_error(y_val, y_pred) # MSE
-mae = mean_absolute_error(y_val, y_pred) # MAE
-r2 = r2_score(y_val, y_pred) # R2-SCORE
-me = max_error(y_val, y_pred) # MAX-ERROR
-var = explained_variance_score(y_val, y_pred) # EXPLAINED-VARIANCE 
+mse = mean_squared_error(y_val, y_pred)  # MSE
+mae = mean_absolute_error(y_val, y_pred)  # MAE
+r2 = r2_score(y_val, y_pred)  # R2-SCORE
+me = max_error(y_val, y_pred)  # MAX-ERROR
+var = explained_variance_score(y_val, y_pred)  # EXPLAINED-VARIANCE
 
-metrics = {"mse": mse, "mae": mae, "r2-score": r2, "max-error": me, "explained variance score": var, "layers": []}
+metrics = {
+    "mse": mse,
+    "mae": mae,
+    "r2-score": r2,
+    "max-error": me,
+    "explained variance score": var,
+    "layers": [],
+}
 print(metrics)
 
 #################################
@@ -107,5 +123,5 @@ if TYPE == "dummy":
 elif TYPE == "real_duration":
     dict_name = folder_name + "/B0_real_duration_metrics.pkl"
 
-with open(dict_name, 'wb') as f:
+with open(dict_name, "wb") as f:
     pickle.dump(metrics, f)

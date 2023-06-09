@@ -1,11 +1,4 @@
-#################################
-# Importing the required libraries
-#################################
-
 import os
-import cv2
-import sys
-import copy
 import torch
 import pickle
 import numpy as np
@@ -15,18 +8,6 @@ import pandas as pd
 import random
 
 from PIL import Image
-
-from sklearn.svm import SVR
-from sklearn.metrics import mean_squared_error
-from sklearn.model_selection import (
-    cross_val_score,
-    cross_validate,
-    KFold,
-    GroupKFold,
-    GridSearchCV,
-    train_test_split,
-)
-
 from torchvision import transforms
 from torchvision import models
 
@@ -38,8 +19,8 @@ def retrieve_videos(video_path, number_of_videos=10, video_format=".avi"):
 
     Args:
       video_path : path to the directory containing the videos
-      number_of_videos : number of videos to retrieve
-      video_format : format of the videos. Default is .avi
+      number_of_videos : number of videos to retrieve (default=10)
+      video_format : format of the videos (default=.avi)
 
     Returns:
       videos : list of the videos names in the directory
@@ -60,7 +41,8 @@ def show_classification(output):
     Args:
         output: the output of the classification network
     Returns:
-        None, but prints the top 5 predictions"""
+        None, but prints the top 5 predictions
+    """
 
     # map the class no to the corresponding class name
     with open("imagenet_classes.txt", "r") as labels:
@@ -80,12 +62,13 @@ def show_classification(output):
     for i in range(5):
         print("{:.2f}%: {}".format(results[i][1], results[i][0]))
 
+
 def get_layers(network: str, type: str) -> list:
     """
     This function returns the layers of the network of which the name is given as input.
     Args:
         network: the name of the network
-        type: str indicating whether the run should be naive, lasso or vanilla. If type is None, 
+        type: str indicating whether the run should be naive, lasso or vanilla. If type is None,
         all the layers will be retrieved.
     Returns:
         layers: the list of layers of the network
@@ -121,20 +104,20 @@ def get_layers(network: str, type: str) -> list:
                 "avgpool",
                 "fc",
             ]
-            
+
         elif network.startswith("efficientnet"):
             layers = [
-                "conv1", 
-                "mbconv1", 
+                "conv1",
+                "mbconv1",
                 "mbconv2",
-                "mbconv3", 
+                "mbconv3",
                 "mbconv4",
                 "mbconv5",
                 "mbconv6",
                 "mbconv7",
                 "conv2",
                 "pool",
-                "output"
+                "output",
             ]
 
     return layers
@@ -164,13 +147,13 @@ def transform(network: str, frame: np.ndarray) -> torch.Tensor:
                 transforms.ToTensor(),
             ]
         )
- 
 
     # Convert to PIL
     img = Image.fromarray(frame)
     processed_frame = dtransform(img)
 
     return processed_frame
+
 
 def get_params(type: str, network: str, layers: list) -> dict:
     """
@@ -183,24 +166,26 @@ def get_params(type: str, network: str, layers: list) -> dict:
         params: the parameters for each layer
     """
     NB_VIDEOS = 64
-    
+
     # Load complete dictionary
-    if (os.path.exists("params_" + str(NB_VIDEOS) + "_" + str(network) + ".p")):
+    if os.path.exists("params_" + str(NB_VIDEOS) + "_" + str(network) + ".p"):
         with open("params_" + str(NB_VIDEOS) + "_" + str(network) + ".p", "rb") as f:
             params = pickle.load(f)
     else:
         print("No data")
-        
+
     if type == "vanilla":
         if network == "alexnet":
-            layers = ['conv2', 'pool5', 'fc7', 'output']
-        
+            layers = ["conv2", "pool5", "fc7", "output"]
+
     params = {key: params[key] for key in layers}
-    
+
     return params
 
 
-def plot_change_detection(layers, l2, thresholds, params, results_dir, video, frequency=30):
+def plot_change_detection(
+    layers, l2, thresholds, params, results_dir, video, frequency=30
+):
     """
     This function plots the change detection for each layer.
     Args:
@@ -219,7 +204,7 @@ def plot_change_detection(layers, l2, thresholds, params, results_dir, video, fr
     plt.subplots_adjust(hspace=0.4, wspace=0.2)
 
     nb = len(layers)
-    rows = int(nb/2) + 1
+    rows = int(nb / 2) + 1
     for i, layer in enumerate(layers):
         # add a new subplot iteratively
         ax = plt.subplot(rows, 2, i + 1)
@@ -235,7 +220,7 @@ def plot_change_detection(layers, l2, thresholds, params, results_dir, video, fr
             label="Maximum threshold",
             alpha=0.5,
         )
-        
+
         # Make an horizontal line at T_min for each layer
         ax.axhline(
             y=params[layer]["T_min"],
@@ -244,7 +229,7 @@ def plot_change_detection(layers, l2, thresholds, params, results_dir, video, fr
             label="Minimum threshold",
             alpha=0.5,
         )
-        
+
         # Put dots at each timestep on the curves
         ax.scatter(time, thresholds[layer], s=3, color="r")
         ax.scatter(time, l2[layer], s=3, color="b")
@@ -254,7 +239,7 @@ def plot_change_detection(layers, l2, thresholds, params, results_dir, video, fr
         ax.legend()
 
     plt.savefig(results_dir + "change_detection_" + str(video) + ".jpeg")
-    #plt.show()
+    # plt.show()
 
 
 def plot_sense_of_time(layers, accumulators_history, results_dir, video, frequency=30):
@@ -276,12 +261,12 @@ def plot_sense_of_time(layers, accumulators_history, results_dir, video, frequen
     plt.subplots_adjust(hspace=0.4, wspace=0.2)
 
     nb = len(layers)
-    rows = int(nb/2) + 1
+    rows = int(nb / 2) + 1
     for i, layer in enumerate(layers):
         # add a new subplot iteratively
         ax = plt.subplot(rows, 2, i + 1)
         time = np.arange(len(accumulators_history[layer])) * frequency
-        
+
         ax.plot(time, accumulators_history[layer], label="Accumulator")
         ax.set_title("Sense of time in layer  : " + layer)
         ax.set_xlabel("Time step")
@@ -289,7 +274,7 @@ def plot_sense_of_time(layers, accumulators_history, results_dir, video, frequen
         ax.legend()
 
     plt.savefig(results_dir + "sense_of_time_" + str(video) + ".jpeg")
-    #plt.show()
+    # plt.show()
 
 
 def read_excel(
@@ -318,7 +303,7 @@ def read_excel(
     df = df.assign(
         BlackScreen_Duration=df["BlackScreen_Duration"].apply(lambda x: x / 1000)
     )
-    
+
     # Each line corresponds to a video, check if all the videos are in the directory
     videos = df["Stimuli_Name"].unique()
     if len(videos) != len(os.listdir(videos_dir)):
@@ -336,7 +321,6 @@ def build_duration_dataset(
     number_of_videos=64,
     video_format=".avi",
 ):
-
     """
     This function builds the dataset used for real-duration baseline for the training of the model.
     Args:
@@ -344,12 +328,21 @@ def build_duration_dataset(
         df: the dataframe containing the duration of the black screen for each video (value to predict)
         number_of_videos: the number of videos to use for the training
         video_format: the format of the videos
+    Returns:
+        X_train: the training set
+        y_train: the labels of the training set
+        patients_train: the patients corresponding to the training set
+        stimuli_names_train: the stimuli names corresponding to the training set
+        X_test: the test set
+        y_test: the labels of the test set
+        patients_test: the patients corresponding to the test set
+        stimuli_names_test: the stimuli names corresponding to the test set
     """
     # Get all videos
     videos = retrieve_videos(
-            videos_dir, number_of_videos=number_of_videos, video_format=video_format
-        )
-    
+        videos_dir, number_of_videos=number_of_videos, video_format=video_format
+    )
+
     # Select videos for testing and the remainder for training
     random.seed(42)
     test_videos = random.choices(videos, k=8)
@@ -361,7 +354,7 @@ def build_duration_dataset(
     y_train = []
     patients_train = []
     stimuli_names_train = []
-    
+
     X_test = []
     y_test = []
     patients_test = []
@@ -369,11 +362,10 @@ def build_duration_dataset(
 
     print("Generating the training set for videos : ")
     for video in videos:
-
         # WARNING : the videos will not be in the df because the names are not the same !!!
         # We must remove the ".avi" at the end of the video name
         # And we must also remove the remaining "." in the name
-        video_name = video # save the original name before changing it 
+        video_name = video  # save the original name before changing it
         video = video.replace(".avi", "")
         video = video.replace(".", "")
 
@@ -386,12 +378,12 @@ def build_duration_dataset(
         ids = df[df["Stimuli_Name"] == video]["Participant"].values
 
         for real_duration, duration, id in zip(real_durations, durations, ids):
-            if video_name in test_videos: # Test set
+            if video_name in test_videos:  # Test set
                 X_test += [[real_duration]]
                 y_test += [duration]
                 patients_test += [id]
                 stimuli_names_test += [video]
-            else: # Training set
+            else:  # Training set
                 X_train += [[real_duration]]
                 y_train += [duration]
                 patients_train += [id]
@@ -402,14 +394,23 @@ def build_duration_dataset(
             len(X_train), len(set(patients_train)), len(train_videos)
         )
     )
-    
+
     print(
         "TEST SET : contains {} samples, {} patients based on {} videos".format(
             len(X_test), len(set(patients_test)), len(test_videos)
         )
     )
 
-    return X_train, y_train, patients_train, stimuli_names_train, X_test, y_test, patients_test, stimuli_names_test
+    return (
+        X_train,
+        y_train,
+        patients_train,
+        stimuli_names_train,
+        X_test,
+        y_test,
+        patients_test,
+        stimuli_names_test,
+    )
 
 
 def build_dataset(
@@ -427,15 +428,25 @@ def build_dataset(
         df: the dataframe containing the duration of the black screen for each video (value to predict)
         number_of_videos: the number of videos to use for the training
         video_format: the format of the videos
+
+    Returns:
+        X_train: the training set
+        y_train: the labels of the training set
+        patients_train: the patients corresponding to the training set
+        stimuli_names_train: the stimuli names corresponding to the training set
+        X_test: the test set
+        y_test: the labels of the test set
+        patients_test: the patients corresponding to the test set
+        stimuli_names_test: the stimuli names corresponding to the test set
     """
     # For each video, we must predict the duration of the black screen
     # Each participant has a unique ID which we'll use to perform a K-fold cross validation
 
     # Get all videos
     videos = retrieve_videos(
-            videos_dir, number_of_videos=number_of_videos, video_format=video_format
-        )
-    
+        videos_dir, number_of_videos=number_of_videos, video_format=video_format
+    )
+
     # Select videos for testing and the remainder for training
     random.seed(42)
     test_videos = random.choices(videos, k=8)
@@ -452,17 +463,16 @@ def build_dataset(
     y_train = []
     patients_train = []
     stimuli_names_train = []
-    
+
     X_test = []
     y_test = []
     patients_test = []
     stimuli_names_test = []
 
     print("Generating the training set for videos : ")
-    #print(videos_accs)
+    # print(videos_accs)
 
     for video in videos:
-
         if video not in videos_accs.keys():
             continue
 
@@ -473,7 +483,7 @@ def build_dataset(
         # WARNING : the videos will not be in the df because the names are not the same !!!
         # We must remove the ".avi" at the end of the video name
         # And we must also remove the remaining "." in the name
-        video_name = video # save the original name before changing it 
+        video_name = video  # save the original name before changing it
         video = video.replace(".avi", "")
         video = video.replace(".", "")
 
@@ -485,12 +495,12 @@ def build_dataset(
         ids = df[df["Stimuli_Name"] == video]["Participant"].values
 
         for duration, id in zip(durations, ids):
-            if video_name in test_videos: # Test set
+            if video_name in test_videos:  # Test set
                 X_test += [accs]
                 y_test += [duration]
                 patients_test += [id]
                 stimuli_names_test += [video]
-            else: # Training set
+            else:  # Training set
                 X_train += [accs]
                 y_train += [duration]
                 patients_train += [id]
@@ -501,14 +511,23 @@ def build_dataset(
             len(X_train), len(set(patients_train)), len(train_videos)
         )
     )
-    
+
     print(
         "TEST SET : contains {} samples, {} patients based on {} videos".format(
             len(X_test), len(set(patients_test)), len(test_videos)
         )
     )
 
-    return X_train, y_train, patients_train, stimuli_names_train, X_test, y_test, patients_test, stimuli_names_test
+    return (
+        X_train,
+        y_train,
+        patients_train,
+        stimuli_names_train,
+        X_test,
+        y_test,
+        patients_test,
+        stimuli_names_test,
+    )
 
 
 def get_model(name):
@@ -517,30 +536,37 @@ def get_model(name):
     elif name == "alexnet":
         model = models.alexnet(weights="AlexNet_Weights.IMAGENET1K_V1")
     elif name == "efficientnetB0":
-        model= models.efficientnet_b0(weights="EfficientNet_B0_Weights.IMAGENET1K_V1")
+        model = models.efficientnet_b0(weights="EfficientNet_B0_Weights.IMAGENET1K_V1")
     elif name == "efficientnetB4":
-        model= models.efficientnet_b4(weights="EfficientNet_B4_Weights.IMAGENET1K_V1")
+        model = models.efficientnet_b4(weights="EfficientNet_B4_Weights.IMAGENET1K_V1")
     elif name == "efficientnetB7":
-        model= models.efficientnet_b7(weights="EfficientNet_B7_Weights.IMAGENET1K_V1")
+        model = models.efficientnet_b7(weights="EfficientNet_B7_Weights.IMAGENET1K_V1")
     else:
         print("Invalid network name")
-        
+
     return model
 
-        
-    
+
 def hook_layers(model, network, type, layers):
-    
-    #################################
-    # Initialize activations
-    #################################
+    """
+    This function hooks the layers of the model to retrieve the activations.
+
+    Args:
+        model: the model to hook
+        network: the network used
+        type: the type of hooking (vanilla or layers)
+        layers: the layers to hook
+
+    Returns:
+        activation: the activations of the model
+    """
     activation = {}
+
     def get_activation(name):
         def hook(model, input, output):
             activation[name] = output.detach()
 
         return hook
-    
 
     children = list(model.children())
     if type == "vanilla":  # hook layers mentioned in article
@@ -616,25 +642,3 @@ def hook_layers(model, network, type, layers):
                 elif layer == "output":
                     children[2].register_forward_hook(get_activation(layer))
     return activation
-
-def build_validation_set(X, y, patients, stimuli_names, patient):
-    print("Build validation set.")
-    print("The test patient is : {}".format(patient))
-
-    # Get the rows corresponding to the test patient
-    X_val = []
-    y_val = []
-    for i, id in enumerate(patients):
-        if id == patient:
-            X_val += [X[i]]
-            y_val += [y[i]]
-
-            X.pop(i)
-            y.pop(i)
-            patients.pop(i)
-            stimuli_names.pop(i)
-
-    print("The validation set contains {} samples".format(len(X_val)))
-    print(X_val, y_val)
-    
-    return X_val, y_val

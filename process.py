@@ -1,33 +1,8 @@
-#################################
-# Importing the required libraries
-#################################
-
-import os
 import cv2
-import sys
 import copy
 import torch
 import pickle
 import numpy as np
-import matplotlib as plt
-import seaborn as sns
-import pandas as pd
-
-from PIL import Image
-
-from sklearn.svm import SVR
-from sklearn.metrics import mean_squared_error
-from sklearn.model_selection import (
-    cross_val_score,
-    cross_validate,
-    KFold,
-    GroupKFold,
-    GridSearchCV,
-    train_test_split,
-)
-
-from torchvision import transforms
-from torchvision import models
 
 import utils
 
@@ -103,6 +78,27 @@ def process_video(
     display=False,
     frequency=30,
 ):
+    """
+    This function processes a video and computes accumulators as well as the sense of time and change detection plots.
+
+    Args:
+        model : pretrained model
+        device : device on which the model is loaded
+        activation : activation of the model
+        video_path : path to the video
+        network : network architecture
+        layers : layers of the network to be considered
+        params : parameters for implementing the accumulation mechanism
+        display : whether to display the video or not (default = False)
+        frequency : frequency of the frames to be processed (default = 30)
+
+    Returns:
+        accs : accumulators
+        accumulators_history : history of the accumulators over time
+        thresholds : values of the thresholds over time
+        l2 : L2 norms between states of the activation over time
+    """
+
     l2 = {
         layer: [] for layer in layers
     }  # dict that holds the L2 norms between states of the activation
@@ -223,6 +219,26 @@ def compute_accumulators(
     plot,
     results_dir,
 ):
+    """
+    This function computes the accumulators for a set of videos.
+
+    Args:
+        model : pretrained model
+        network : network architecture
+        layers : layers of the network to be considered
+        params : parameters for implementing the accumulation mechanism
+        activation : activation of the model
+        device : device on which the model is loaded
+        videos_dir : directory where the videos are stored
+        number_of_videos : number of videos to be processed
+        plot : whether to plot the change detection and sense of time plots or not
+        results_dir : directory where the results are stored
+
+    Returns:
+        videos_accs : accumulators for each video
+        videos_thresholds : values of the thresholds over time for each video
+        videos_l2 : L2 norms between states of the activation over time for each video
+    """
     videos = utils.retrieve_videos(
         videos_dir, number_of_videos=number_of_videos, video_format=".avi"
     )

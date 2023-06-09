@@ -19,7 +19,6 @@ TYPE = str(args.type)
 #################################
 # Parameters
 #################################
-
 NETWORKS = ["alexnet", "resnet18", "efficientnetB0", "efficientnetB4", "efficientnetB7"]
 NB_VIDEOS = 64
 new_dir = None

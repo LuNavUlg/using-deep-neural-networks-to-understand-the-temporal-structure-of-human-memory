@@ -1,24 +1,22 @@
 import os
-import torch
-import cv2
 import argparse
-import numpy as np
-import matplotlib.pyplot as plt
-import torch.nn.functional as F
-import torch.nn as nn
 import pickle
 import sys
 import random
 import pandas as pd
-from tqdm.notebook import tqdm
 from sklearn.svm import SVR
-from sklearn.metrics import mean_squared_error, mean_absolute_error, r2_score, max_error, explained_variance_score
+from sklearn.metrics import (
+    mean_squared_error,
+    mean_absolute_error,
+    r2_score,
+    max_error,
+    explained_variance_score,
+)
 from sklearn.model_selection import (
     GroupKFold,
     GridSearchCV,
 )
 import utils
-import process
 
 parser = argparse.ArgumentParser()
 parser.add_argument("-t", "--type", help="Time series or final value")
@@ -28,12 +26,12 @@ args = parser.parse_args()
 TYPE = str(args.type)
 NB_VIDEOS = args.videos
 
-videos =  os.listdir("Videos/")
+videos = os.listdir("Videos/")
 videos.remove(".DS_Store")
 
 # Load the accumulators (if already computed) (pickles)
-if (os.path.exists("DRTANet_history_accs_" + str(NB_VIDEOS) + ".p")
-    and os.path.exists("DRTANet_accs_" + str(NB_VIDEOS) + ".p")
+if os.path.exists("DRTANet_history_accs_" + str(NB_VIDEOS) + ".p") and os.path.exists(
+    "DRTANet_accs_" + str(NB_VIDEOS) + ".p"
 ):
     with open("DRTANet_history_accs_" + str(NB_VIDEOS) + ".p", "rb") as f:
         detected_changes_history = pickle.load(f)
@@ -77,7 +75,6 @@ stimuli_names_test = []
 
 print("Generating the training set for videos : ")
 for video in videos:
-    
     if TYPE == "series":
         accs = detected_changes_history[video]
 
@@ -85,11 +82,11 @@ for video in videos:
         accs = accs + [0] * (MAX_LENGTH - len(accs))
     else:
         accs = detected_changes[video]
-        
+
     # WARNING : the videos will not be in the df because the names are not the same !!!
     # We must remove the ".avi" at the end of the video name
     # And we must also remove the remaining "." in the name
-    video_name = video # save the original name before changing it 
+    video_name = video  # save the original name before changing it
     video = video.replace(".avi", "")
     video = video.replace(".", "")
 
@@ -101,12 +98,12 @@ for video in videos:
     ids = df[df["Stimuli_Name"] == video]["Participant"].values
 
     for duration, id in zip(durations, ids):
-        if video_name in test_videos: # Test set
+        if video_name in test_videos:  # Test set
             X_test += [accs]
             y_test += [duration]
             patients_test += [id]
             stimuli_names_test += [video]
-        else: # Training set
+        else:  # Training set
             X_train += [accs]
             y_train += [duration]
             patients_train += [id]
@@ -124,13 +121,13 @@ print(
     )
 )
 
-X = [[el] for el in X_train] if TYPE == "real_duration" else X_train    
+X = [[el] for el in X_train] if TYPE == "real_duration" else X_train
 y = y_train
 patients = patients_train
-stimuli_names = stimuli_names_train 
+stimuli_names = stimuli_names_train
 X_val = [[el] for el in X_test] if TYPE == "real_duration" else X_test
-y_val = y_test 
-patients_val = patients_test 
+y_val = y_test
+patients_val = patients_test
 stimuli_names_val = stimuli_names_test
 
 test = pd.DataFrame(
@@ -147,15 +144,26 @@ nb_folds = len(set(stimuli_names))
 print("Number of folds : {}".format(nb_folds))
 
 gkf = GroupKFold(n_splits=nb_folds)
-regression_model = SVR(kernel='rbf', gamma=0.0001)
+regression_model = SVR(kernel="rbf", gamma=0.0001)
 grid = {
-    'epsilon': [0.01, 0.1, 1, 10],
+    "epsilon": [0.01, 0.1, 1, 10],
     "C": [1e1, 1e2, 1e3, 1e4],
 }
 
-metrics = ['r2', 'neg_mean_absolute_error', 'neg_mean_squared_error', 'max_error', 'explained_variance']
+metrics = [
+    "r2",
+    "neg_mean_absolute_error",
+    "neg_mean_squared_error",
+    "max_error",
+    "explained_variance",
+]
 grid_search = GridSearchCV(
-    estimator=regression_model, param_grid=grid, cv=gkf, scoring=metrics, refit='neg_mean_squared_error', verbose=1
+    estimator=regression_model,
+    param_grid=grid,
+    cv=gkf,
+    scoring=metrics,
+    refit="neg_mean_squared_error",
+    verbose=1,
 )
 
 print("Grid search.")
@@ -165,8 +173,8 @@ print("The best parameters are : {}".format(grid_search.best_params_))
 # Try to predict for the validation set
 y_pred = grid_search.best_estimator_.predict(X_val)
 
-# Get scores obtained for best parameters : 
-idx = grid_search.cv_results_['params'].index(grid_search.best_params_)
+# Get scores obtained for best parameters :
+idx = grid_search.cv_results_["params"].index(grid_search.best_params_)
 
 # Display results in dataframe
 results = pd.DataFrame(
@@ -180,23 +188,35 @@ results = pd.DataFrame(
 results = results.iloc[random.sample(range(len(results)), len(results))]
 
 
-with pd.option_context('display.max_rows', None,
-                       'display.max_columns', None,
-                       'display.precision', 2,
-                       'max_colwidth', 300
-                       ):
+with pd.option_context(
+    "display.max_rows",
+    None,
+    "display.max_columns",
+    None,
+    "display.precision",
+    2,
+    "max_colwidth",
+    300,
+):
     print(results.head(15))
 
-    
-mse = mean_squared_error(y_val, y_pred) # MSE
-mae = mean_absolute_error(y_val, y_pred) # MAE
-r2 = r2_score(y_val, y_pred) # R2-SCORE
-me = max_error(y_val, y_pred) # MAX-ERROR
-var = explained_variance_score(y_val, y_pred) # EXPLAINED-VARIANCE
 
-metrics = {"mse": mse, "mae": mae, "r2-score": r2, "max-error": me, "explained variance score": var, "layers": []}
+mse = mean_squared_error(y_val, y_pred)  # MSE
+mae = mean_absolute_error(y_val, y_pred)  # MAE
+r2 = r2_score(y_val, y_pred)  # R2-SCORE
+me = max_error(y_val, y_pred)  # MAX-ERROR
+var = explained_variance_score(y_val, y_pred)  # EXPLAINED-VARIANCE
 
-df_metrics = pd.DataFrame(list(metrics.items()), columns=['Metric', 'Value'])
+metrics = {
+    "mse": mse,
+    "mae": mae,
+    "r2-score": r2,
+    "max-error": me,
+    "explained variance score": var,
+    "layers": [],
+}
+
+df_metrics = pd.DataFrame(list(metrics.items()), columns=["Metric", "Value"])
 print(df_metrics)
 
 
@@ -209,5 +229,5 @@ if not os.path.exists(folder_name):
 # Save the dictionary with the results
 dict_name = folder_name + "/metrics_" + str(TYPE) + ".pkl"
 
-with open(dict_name, 'wb') as f:
+with open(dict_name, "wb") as f:
     pickle.dump(metrics, f)

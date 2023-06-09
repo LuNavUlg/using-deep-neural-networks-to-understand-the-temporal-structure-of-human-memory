@@ -1,43 +1,14 @@
 import os
-import cv2
 import sys
 import argparse
-import copy
-import pickle
 import torch
-import itertools
-import numpy as np
-import matplotlib as plt
-import scipy.io as sio
-import seaborn as sns
-import pandas as pd
 
-from PIL import Image
-
-from sklearn.svm import SVR
-from sklearn.pipeline import Pipeline
-from sklearn.preprocessing import StandardScaler
-from sklearn.metrics import mean_squared_error
-from sklearn import linear_model
-from sklearn.model_selection import (
-    GroupKFold,
-    GridSearchCV,
-)
-
-from torchvision import transforms
-from torchvision import models
-
-
-import utils
-import process
 import regression
 
 """
     This script is used to automate the process described in the paper.
 """
-
 if __name__ == "__main__":
-
     #################################
     # Define device
     #################################
@@ -53,10 +24,12 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("-m", "--model", help="Model to use")
     parser.add_argument("-v", "--videos", help="Number of videos to use", default=10)
-    parser.add_argument("-t","--type", help="Type of run : vanilla - naive - lasso")
-    parser.add_argument("-f", "--features", help="Maximum number of features to use", default=None)
+    parser.add_argument("-t", "--type", help="Type of run : vanilla - naive - lasso")
+    parser.add_argument(
+        "-f", "--features", help="Maximum number of features to use", default=None
+    )
     parser.add_argument("-id", "--id", help="Job ID")
-    
+
     # Plot
     parser.add_argument("--p", action="store_true")
     parser.add_argument("--no-p", dest="p", action="store_false")
@@ -84,35 +57,48 @@ if __name__ == "__main__":
     if type == "naive":
         print("Using " + str(features) + " features")
         print("Job ID : " + str(jobid))
-        
+
     # Options
     print("Plotting ? ", "yes" if p == True else "no")
     print("Calculate accumulators ? ", "yes" if c == True else "no")
-    
-        
+
     #################################
     # Directory paths
     #################################
     wd = os.getcwd()
     root_dir = wd + "/"
     videos_dir = wd + "/Videos/"
-    
+
     # Check if the directory exists and report error if not
     if not os.path.exists(videos_dir):
         print("Error: Videos directory does not exist")
         sys.exit()
     else:
-        print("The directory contains : " + str(len(os.listdir(videos_dir))) + " videos")
-        
+        print(
+            "The directory contains : " + str(len(os.listdir(videos_dir))) + " videos"
+        )
+
     # Create new directory to store results
     new_dir = wd + "/results/" + str(network) + "_" + str(nb_videos) + "/"
-    
+
     try:
         os.mkdir(new_dir)
     except FileExistsError:
         pass
-    
+
     #################################
     # Run main process
     #################################
-    regression.compute(device, network, nb_videos, type, features, jobid, p, c, root_dir, videos_dir, new_dir)
+    regression.compute(
+        device,
+        network,
+        nb_videos,
+        type,
+        features,
+        jobid,
+        p,
+        c,
+        root_dir,
+        videos_dir,
+        new_dir,
+    )

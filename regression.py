@@ -1,18 +1,13 @@
 import os
 import sys
-import argparse
-import copy
 import pickle
-import torch
 import itertools
 import random
 import numpy as np
-import scipy.io as sio
 import pandas as pd
 
 from sklearn.svm import SVR
 from sklearn.linear_model import LassoCV
-from sklearn.dummy import DummyRegressor
 from sklearn.metrics import (
     mean_squared_error,
     mean_absolute_error,
@@ -24,11 +19,6 @@ from sklearn.model_selection import (
     GroupKFold,
     GridSearchCV,
 )
-
-from torchvision import transforms
-from torchvision import models
-
-from tqdm import tqdm
 
 import utils
 import process
@@ -47,6 +37,29 @@ def compute(
     videos_dir,
     new_dir,
 ):
+    """
+    This function implements the complete pipeline of the regression task, including:
+        - Model architecture definition
+        - Accumulators computation for selected videos and layers
+        - Vanilla regression scheme, LassoCV regression scheme, or Naive regression scheme
+        - Results saving
+
+    Args:
+        DEVICE (str): Device to use for the computation (mps, cpu or cuda)
+        NETWORK (str): Network to use for the computation (alexnet, resnet18 or efficientnetB0, efficientnetB4 or efficientnetB7)
+        NB_VIDEOS (int): Number of videos to use for the computation
+        TYPE (str): Type of regression scheme to use (vanilla, lasso or naive)
+        FEATURES (int): Number of features to use for the computation of naive regression scheme (combinations of #features layers)
+        JOBID (int): Job ID for the computation of the naive regression scheme
+        p (bool): Boolean to indicate if the plots should be displayed
+        c (bool): Boolean to indicate if the accumulators should be recomputed
+        root_dir (str): Root directory of the project
+        videos_dir (str): Directory of the videos
+        new_dir (str): Directory to save the results
+
+    Returns:
+        None
+    """
     #################################
     # Define model architecture
     #################################
