@@ -43,8 +43,12 @@ To use the code and reproduce the experiments, follow these steps:
 1. Clone the repository: `git clone https://github.com/LuNavUlg/using-deep-neural-networks-temporal-structure-human-memory.git`
 2. Install the required dependencies: `pip install -r requirements.txt`
 3. Download the videos (not linked here for privacy and storage limitations reasons) and place them in a `Videos/` directory in the root of the repository.
-4. Run the `run.sbatch` file to run the code on the Alan cluster of the University of Liège. The script will run the code for all the experiments described in the table above. The results will be stored in the `expx/` directories. The `run.sbatch` file can be modified to run only a subset of the experiments. The `run.sbatch` file also makes use of arguments that can be modified to change the parameters of the experiments. The arguments are described in the list below:
-`sbatch run.sbatch $1 $2 $3`
+4. Run the `run.sbatch` file to run the code on the Alan cluster of the University of Liège. The script will run the code for all the experiments described in the table above. The results will be stored in the `expx/` directories. The `run.sbatch` file can be modified to run only a subset of the experiments. The `run.sbatch` file also makes use of arguments that can be modified to change the parameters of the experiments. 
+Run the following command: 
+   ```
+   sbatch run.sbatch $1 $2 $3
+   ```
+   The arguments are described in the list below:
    - `$1 (int)`: The number of videos to use for the experiments (64 for all the videos of the dataset).
    - `$2 (bool)`: Compute accumulators (True) or re-use the ones already computed (False).
    - `$3 (str)`: Calibration method to use for the accumulation mechanism (``fixed``, ``stats``).
